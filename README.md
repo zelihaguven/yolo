@@ -40,14 +40,14 @@ yolo
 │   
 │
 ├── part2/
-│   ├── YOLO_Part2_mockups.docx                    # 10 scenario descriptions
+│   ├── YOLO_Part2_mockups.docx                   # 10 scenario descriptions
 │   └── figma_link.txt                            # Figma wireframes link
 │
 ├── part3/
 │   ├── YOLO_Part3_Wiki.docx                      # Full Wiki document
 │   ├── src/
-│   │   ├── CitySearch.java                       # Claude-generated Java code
-│   │   └── ReviewSubmission.java                 # Claude-generated Java code
+│   │   
+│   │                                             # AI-generated Java code
 │   └── lovable_link.txt                          # Lovable prototype link
 │
 └── README.md
