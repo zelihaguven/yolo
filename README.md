@@ -10,8 +10,8 @@ This repository contains all deliverables for the **GSE1 (Fundamentals of Softwa
 
 The project was developed in three parts:
 
-| Part | Topic | Deadline |
-|------|-------|----------|
+| Part | Topic |
+|------|-------|
 | Part 1 | Product Backlog & Scope Statement 
 | Part 2 | Wireframes & Mock-ups 
 | Part 3 | AI Implementation & Comparison 
@@ -44,7 +44,7 @@ yolo
 │   └── figma_link.txt                            # Figma wireframes link
 │
 ├── part3/
-│   ├── YOLO_Part3_Wiki.docx                      # Full Wiki document
+│   ├── YOLO_Part3_Wiki.pdf                       # Full Wiki document
 │   ├── src/
 │   │   
 │   │                                             # AI-generated Java code
