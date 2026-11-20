@@ -153,7 +153,116 @@
     var t = el('span', cls, CATEGORIES[s.category].icon);
     t.style.background = CATEGORIES[s.category].tint;
     t.setAttribute('aria-hidden', 'true');
+    if (s.photo) {
+      var img = el('img');
+      img.alt = '';
+      img.loading = 'lazy';
+      img.addEventListener('error', function () { img.remove(); });
+      img.src = s.photo;
+      t.appendChild(img);
+    }
     return t;
+  }
+
+  // ---------- data checks: a typo in spots.json should hide one spot, not break the page ----------
+  function isNum(n, min, max) { return typeof n === 'number' && isFinite(n) && n >= min && n <= max; }
+  function isText(v) { return typeof v === 'string' && v.trim() !== ''; }
+  function sanitize(json) {
+    var out = { cities: [], spots: [] };
+    var cityIds = {};
+    var seen = {};
+    (Array.isArray(json && json.cities) ? json.cities : []).forEach(function (c) {
+      if (c && isText(c.id) && isText(c.name) && isNum(c.lat, -90, 90) && isNum(c.lng, -180, 180)) {
+        if (!isNum(c.zoom, 1, 19)) c.zoom = 13;
+        cityIds[c.id] = true;
+        out.cities.push(c);
+      } else {
+        console.warn('YOLO data: skipped a city with missing fields', c);
+      }
+    });
+    (Array.isArray(json && json.spots) ? json.spots : []).forEach(function (s) {
+      var why = '';
+      if (!s || !isText(s.id)) why = 'missing id';
+      else if (seen[s.id]) why = 'duplicate id';
+      else if (!isText(s.name)) why = 'missing name';
+      else if (!cityIds[s.city]) why = 'unknown city "' + s.city + '"';
+      else if (!CATEGORIES[s.category]) why = 'unknown category "' + s.category + '"';
+      else if (!isNum(s.price, 0, 3) || Math.floor(s.price) !== s.price) why = 'price must be 0, 1, 2 or 3';
+      else if (!isNum(s.lat, -90, 90) || !isNum(s.lng, -180, 180)) why = 'bad lat/lng';
+      if (why) { console.warn('YOLO data: skipped spot (' + why + ')', s); return; }
+      seen[s.id] = true;
+      s.studentDiscount = s.studentDiscount === true;
+      s.area = isText(s.area) ? s.area : '';
+      s.tip = isText(s.tip) ? s.tip : '';
+      s.address = isText(s.address) ? s.address : '';
+      s.photoCredit = isText(s.photoCredit) ? s.photoCredit : '';
+      // Photos must be files in docs/photos/ or full https links.
+      s.photo = isText(s.photo) && /^(photos\/[\w.\-\/]+|https:\/\/\S+)$/.test(s.photo) ? s.photo : '';
+      s.hours = (Array.isArray(s.hours) ? s.hours : []).filter(function (h) {
+        return h && isText(h.days) && isText(h.time);
+      });
+      out.spots.push(s);
+    });
+    return out;
+  }
+
+  // ---------- shareable links: #/spot/<id> ----------
+  function spotFromHash() {
+    var m = /^#\/spot\/(.+)$/.exec(location.hash);
+    if (!m) return null;
+    var id;
+    try { id = decodeURIComponent(m[1]); } catch (e) { return null; }
+    return data.spots.filter(function (s) { return s.id === id; })[0] || null;
+  }
+  function spotUrl(s) {
+    return location.origin + location.pathname + location.search + '#/spot/' + encodeURIComponent(s.id);
+  }
+  function setHash(hash) {
+    try { history.replaceState(null, '', location.pathname + location.search + hash); } catch (e) { /* file:// */ }
+  }
+  function clearSpot() {
+    openSpot = null;
+    if (/^#\/spot\//.test(location.hash)) setHash('');
+  }
+  function closeDetail() {
+    clearSpot();
+    if ($('detail').open) $('detail').close();
+  }
+  function route() {
+    var s = spotFromHash();
+    if (s) {
+      if (s.city !== state.city) {
+        state.city = s.city;
+        store(CITY_KEY, s.city);
+        if (state.tab === 'saved') state.tab = 'explore';
+        renderCities();
+        render(true);
+      }
+      if (!openSpot || openSpot.id !== s.id) openDetail(s);
+    } else {
+      closeDetail();
+    }
+  }
+  function share() {
+    var s = openSpot;
+    if (!s) return;
+    var url = spotUrl(s);
+    var copy = function () {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(url).then(
+          function () { toast('Link copied ✓'); },
+          function () { toast('Copy the link from the address bar'); }
+        );
+      } else {
+        toast('Copy the link from the address bar');
+      }
+    };
+    if (navigator.share) {
+      navigator.share({ title: s.name + ' · YOLO', text: s.name + ' in ' + cityName(s.city), url: url })
+        .catch(function (e) { if (!e || e.name !== 'AbortError') copy(); });
+    } else {
+      copy();
+    }
   }
 
   function toggleSave(s) {
@@ -266,7 +375,31 @@
     $('dHero').style.background = 'linear-gradient(160deg, ' + cat.tint + ', ' + cat.color + ')';
     $('dHeroIcon').textContent = cat.icon;
     $('dTitle').textContent = s.name;
-    $('dMeta').textContent = '📍 ' + s.area + ', ' + cityName(s.city);
+    $('dMeta').textContent = '📍 ' + (s.address || [s.area, cityName(s.city)].filter(Boolean).join(', '));
+
+    var photo = $('dPhoto');
+    photo.hidden = true;
+    photo.removeAttribute('src');
+    $('dCredit').hidden = true;
+    if (s.photo) {
+      photo.onload = function () {
+        if (openSpot !== s) return;
+        photo.hidden = false;
+        $('dCredit').textContent = 'Photo: ' + s.photoCredit;
+        $('dCredit').hidden = !s.photoCredit;
+      };
+      photo.onerror = function () { photo.hidden = true; };
+      photo.src = s.photo;
+    }
+
+    var hours = $('dHours');
+    hours.textContent = '';
+    s.hours.forEach(function (h) {
+      var closed = /^closed$/i.test(h.time.trim());
+      hours.appendChild(el('dt', closed ? 'closed' : null, h.days));
+      hours.appendChild(el('dd', closed ? 'closed' : null, h.time));
+    });
+    $('dHoursBlock').hidden = s.hours.length === 0;
     $('dTip').textContent = s.tip;
     var t = $('dTags'); t.textContent = ''; t.appendChild(tags(s, false));
     var c = $('dChips'); c.textContent = ''; c.appendChild(chips(s));
@@ -338,6 +471,7 @@
     var d = $('detail');
     if (!d.open) d.showModal();
     d.scrollTop = 0;
+    setHash('#/spot/' + encodeURIComponent(s.id));
   }
 
   function submitReview(e) {
@@ -435,9 +569,12 @@
     Array.prototype.forEach.call(document.querySelectorAll('.bottomnav button'), function (b) {
       b.addEventListener('click', function () { setTab(b.dataset.tab); });
     });
-    $('dClose').addEventListener('click', function () { $('detail').close(); });
-    $('detail').addEventListener('click', function (e) { if (e.target === $('detail')) $('detail').close(); });
-    $('detail').addEventListener('close', function () { openSpot = null; });
+    $('dClose').addEventListener('click', closeDetail);
+    $('detail').addEventListener('click', function (e) { if (e.target === $('detail')) closeDetail(); });
+    // Also fires for Esc and the phone's back gesture.
+    $('detail').addEventListener('close', clearSpot);
+    $('dShare').addEventListener('click', share);
+    window.addEventListener('hashchange', route);
     $('dSave').addEventListener('click', function () { if (openSpot) toggleSave(openSpot); });
     $('rText').addEventListener('input', function (e) { $('rCount').textContent = e.target.value.length; });
     $('reviewForm').addEventListener('submit', submitReview);
@@ -446,22 +583,24 @@
       $('dReviews').scrollIntoView({ block: 'start' });
     });
 
-    fetch('data/spots.json')
+    fetch('data/spots.json', { cache: 'no-cache' })
       .then(function (r) {
         if (!r.ok) throw new Error('HTTP ' + r.status);
         return r.json();
       })
       .then(function (json) {
-        data = json;
+        data = sanitize(json);
+        if (!data.cities.length) throw new Error('no cities');
         var remembered = load(CITY_KEY, null);
         var known = data.cities.some(function (c) { return c.id === remembered; });
         state.city = known ? remembered : data.cities[0].id;
         initMap();
         renderCities();
         render(true);
+        route();
       })
       .catch(function () {
-        $('resultCount').textContent = 'Could not load the spot list. If you opened the file directly, run a local web server instead (see README).';
+        $('resultCount').textContent = 'Could not load the spot list. Check data/spots.json for a typo, or if you opened the file directly, run a local web server instead (see README).';
       });
   }
 

@@ -84,7 +84,8 @@ svg[viewBox="0 0 24 24"] { width: 20px; height: 20px; fill: none; stroke: curren
 .card { position: relative; background: var(--surface); border-radius: var(--r-card); box-shadow: var(--shadow); }
 .cardmain { display: flex; gap: 14px; align-items: center; width: 100%; text-align: left; background: transparent; border: 0; padding: 12px; border-radius: var(--r-card); }
 .cardmain:hover { background: #fafbfe; }
-.thumb { width: 84px; height: 84px; border-radius: 16px; display: grid; place-items: center; font-size: 2.1rem; flex: none; }
+.thumb { width: 84px; height: 84px; border-radius: 16px; display: grid; place-items: center; font-size: 2.1rem; flex: none; position: relative; overflow: hidden; }
+.thumb img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
 .cardbody { display: grid; gap: 7px; min-width: 0; flex: 1; }
 .cardtitle { font-weight: 700; font-size: 1.02rem; letter-spacing: -.01em; padding-right: 34px; overflow-wrap: anywhere; }
 .tagrow, .chiprow { display: inline-flex; flex-wrap: wrap; gap: 6px; }
@@ -149,7 +150,15 @@ dialog { border: 0; padding: 0; background: var(--bg); color: var(--text); width
 dialog::backdrop { background: rgba(18, 24, 40, .5); }
 .hero { height: 220px; position: relative; display: grid; place-items: center; }
 .heroicon { font-size: 5rem; filter: drop-shadow(0 8px 16px rgba(0, 0, 0, .18)); }
-.round { position: absolute; top: 16px; left: 16px; width: 44px; height: 44px; border-radius: 50%; border: 0; background: rgba(255, 255, 255, .92); display: grid; place-items: center; box-shadow: var(--shadow); }
+.round { position: absolute; top: 16px; left: 16px; width: 44px; height: 44px; border-radius: 50%; border: 0; background: rgba(255, 255, 255, .92); display: grid; place-items: center; box-shadow: var(--shadow); z-index: 2; }
+.hero img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.hero img[hidden], .credit[hidden] { display: none; }
+.round.right { left: auto; right: 16px; }
+.credit { position: absolute; right: 12px; bottom: 36px; background: rgba(23, 28, 43, .6); color: #fff; font-size: .68rem; padding: 2px 8px; border-radius: 999px; max-width: calc(100% - 24px); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.hours { margin: 0; background: var(--surface); border-radius: var(--r-card); box-shadow: var(--shadow); padding: 12px 16px; display: grid; grid-template-columns: 1fr auto; gap: 8px 16px; font-size: .9rem; }
+.hours dt { color: var(--muted); }
+.hours dd { margin: 0; font-weight: 700; text-align: right; }
+.hours .closed { color: var(--danger); font-weight: 600; }
 .sheet { position: relative; margin-top: -28px; background: var(--bg); border-radius: 28px 28px 0 0; padding: 22px 18px 24px; }
 .titlerow { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
 .titlerow h2 { margin: 0; font-size: 1.5rem; letter-spacing: -.02em; line-height: 1.2; overflow-wrap: anywhere; }
