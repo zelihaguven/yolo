@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>YOLO – Your Erasmus Life Online</title>
+  <meta name="description" content="Student-friendly spots in Heilbronn, Stuttgart and Frankfurt, picked for Erasmus students.">
+  <link rel="stylesheet" href="vendor/leaflet/leaflet.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="top">
+    <div class="brand">
+      <span class="logo">YOLO</span>
+      <span class="tagline">Discover your city. Student-approved.</span>
+    </div>
+    <div class="cities" id="cities" role="tablist" aria-label="City"></div>
+  </header>
+
+  <section class="controls" aria-label="Search and filters">
+    <input id="search" type="search" placeholder="Search spots by name" aria-label="Search spots by name" autocomplete="off">
+    <div class="pills" id="categories" role="group" aria-label="Category"></div>
+    <div class="row">
+      <label class="select">
+        <span>Price</span>
+        <select id="price">
+          <option value="any">Any</option>
+          <option value="0">Free</option>
+          <option value="1">Up to €</option>
+          <option value="2">Up to €€</option>
+        </select>
+      </label>
+      <label class="check"><input type="checkbox" id="student"> Student-friendly</label>
+      <label class="check"><input type="checkbox" id="savedOnly"> Saved <span id="savedCount" class="count">0</span></label>
+    </div>
+  </section>
+
+  <div class="viewtoggle" role="group" aria-label="View">
+    <button type="button" id="showList" aria-pressed="true">List</button>
+    <button type="button" id="showMap" aria-pressed="false">Map</button>
+  </div>
+
+  <main class="layout" data-view="list">
+    <section class="listpane" aria-label="Spots">
+      <p class="resultcount" id="resultCount" aria-live="polite"></p>
+      <ul class="cards" id="cards"></ul>
+      <div class="empty" id="empty" hidden>
+        <p>No spots match these filters.</p>
+        <button type="button" id="reset">Clear filters</button>
+      </div>
+    </section>
+    <section class="mappane" aria-label="Map">
+      <div id="map"></div>
+    </section>
+  </main>
+
+  <dialog id="detail" aria-labelledby="dTitle">
+    <div class="dhead">
+      <div>
+        <h2 id="dTitle"></h2>
+        <p class="dmeta" id="dMeta"></p>
+      </div>
+      <button type="button" class="iconbtn" id="dClose" aria-label="Close">✕</button>
+    </div>
+    <div class="dbody">
+      <p id="dTip"></p>
+      <p class="tags" id="dTags"></p>
+      <p class="unverified" id="dUnverified" hidden>Price and discount details for this spot have not been checked on site yet.</p>
+      <div class="dactions">
+        <button type="button" id="dSave" class="primary"></button>
+        <a id="dDirections" class="button" target="_blank" rel="noopener">Get directions</a>
+      </div>
+
+      <h3>Student reviews <span id="dReviewSummary" class="muted"></span></h3>
+      <ul class="reviews" id="dReviews"></ul>
+      <p class="muted" id="dNoReviews">No reviews yet. Be the first.</p>
+
+      <form id="reviewForm" novalidate>
+        <h3>Write a review</h3>
+        <label>Your name
+          <input id="rName" type="text" maxlength="40" required autocomplete="given-name">
+        </label>
+        <fieldset class="stars">
+          <legend>Rating</legend>
+          <div id="rStars"></div>
+        </fieldset>
+        <label>Your review
+          <textarea id="rText" rows="3" maxlength="500" required></textarea>
+        </label>
+        <p class="hint"><span id="rCount">0</span>/500 · Saved in this browser only.</p>
+        <p class="error" id="rError" role="alert" hidden></p>
+        <button type="submit" class="primary">Submit review</button>
+      </form>
+    </div>
+  </dialog>
+
+  <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+
+  <footer class="foot">
+    Prototype for the YOLO course project. Seed data is hand-entered, so check opening times and prices before you go.
+    Map data © <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors.
+  </footer>
+
+  <script src="vendor/leaflet/leaflet.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

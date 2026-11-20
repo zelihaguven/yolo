@@ -1,6 +1,71 @@
 # YOLO – Your Erasmus Life Online
 
+**▶ Try the working prototype: [zelihaguven.github.io/yolo](https://zelihaguven.github.io/yolo/)**
+
 > A platform for Erasmus and expat students to discover what to do, see, and experience in their new city — curated by people who've actually lived there.
+
+---
+
+## 🚀 Working Prototype
+
+A small web app that really works, built with plain HTML, CSS and JavaScript (no build step). The code is in [`docs/`](docs/).
+
+| What you can do | How it works |
+|---|---|
+| Browse 48 spots in Heilbronn, Stuttgart and Frankfurt | Hand-entered data in [`docs/data/spots.json`](docs/data/spots.json) |
+| Search by name | Ignores case and accents (`gruneburg` finds *Grüneburgpark*) |
+| Filter by category, price and "student-friendly" | Student-friendly means free entry or a student discount |
+| Save spots to a personal list | Stored in the browser (`localStorage`) |
+| Leave a rating and a review that is still there after a reload | Stored in the browser (`localStorage`) |
+| See the filtered spots on a map and open them from a pin | Leaflet + OpenStreetMap |
+
+Run it locally:
+
+```bash
+cd docs && python3 -m http.server 8000
+```
+
+Then open `http://localhost:8000`.
+
+**Known limits.** Reviews and saved spots stay in your own browser, so other people cannot see them yet. The next step is a shared database such as Supabase. Spots marked `"verified": false` in the data file still need their price, student discount and coordinates checked on site.
+
+### The problem
+
+A new Erasmus student arrives in a city where they know nobody and have a small budget. Tourist sites and map apps show what is popular with visitors, not what is affordable and worth it for a student who stays for a semester. Finding out which places are free or give a student discount takes weeks of asking around. YOLO puts that answer on one screen on day one.
+
+### The one metric
+
+**Spots saved per new user in their first week.** A save means the student found a place they actually intend to go to, which is the value the product promises. Target for the first test round: at least 3 saved spots per tester.
+
+The prototype does not send any data anywhere, so today this number can only be read during a test session (the "Saved" counter next to the filters). Measuring it for real needs the shared database mentioned above.
+
+### Wireframes vs. what was built
+
+Compared with the Part 2 scenarios (the Figma link is in `figma_link.txt`).
+
+| Wireframe scenario | In the prototype | Difference and reason |
+|---|---|---|
+| 1. Registration & email verification | Not built | Needs a backend. Reviews ask only for a name. |
+| 2. City exploration & spot discovery | Built | Cities are three fixed tabs instead of a free-text city search. Filter pills, a price filter and a spot detail view are there. Opening hours are not in the data yet. |
+| 3. Saving a spot | Built | Bookmark and "Saved to your list ✓" toast as designed. The saved list is a filter on the main screen, not a profile page. |
+| 4. Writing a review | Built | Text and 1–5 star rating as designed. No photo upload. The review appears directly in the spot's review list instead of a separate confirmation screen. |
+| 6. Community map | Built | Coloured pins per category that follow the filters, pin popup with a "Details" button. The map centres on the chosen city, not on the user's location. |
+| 7. Reading & upvoting reviews | Partly | Reviews can be read. Upvotes are left out because they only make sense once reviews are shared between users. |
+| 5, 8, 9, 10. Weekend trips, events, trip reports, profile | Not built | Out of scope for the first working version. |
+
+The biggest change from the wireframes: on a wide screen the list and the map sit side by side, while the wireframes are mobile only. On a phone the prototype follows the wireframes with a List / Map switch.
+
+### User feedback
+
+*Not collected yet.* Plan: 3 to 5 Erasmus students each get the link and one task ("find a free place to spend Saturday afternoon and save it"), then answer three questions.
+
+| Tester | Home country → host city | Spots saved | What worked | What was confusing or missing |
+|---|---|---|---|---|
+| 1 | | | | |
+| 2 | | | | |
+| 3 | | | | |
+
+**What we change because of it:** *(to be filled in after the test round)*
 
 ---
 
@@ -34,22 +99,16 @@ YOLO is a mobile-first platform designed for Erasmus and long-term expat student
 
 ```
 yolo
-│
-├── part1/
-│   ├── Product Backlog Of The App YOLO.pdf
-│   
-│
-├── part2/
-│   ├── YOLO_Part2_mockups.docx                   # 10 scenario descriptions
-│   └── figma_link.txt                            # Figma wireframes link
-│
-├── part3/
-│   ├── YOLO_Part3_Wiki.pdf                       # Full Wiki document
-│   ├── src/
-│   │   
-│   │                                             # AI-generated Java code
-│   └── lovable_link.txt                          # Lovable prototype link
-│
+├── docs/                                   # Working web prototype (served by GitHub Pages)
+│   ├── index.html, style.css, app.js
+│   ├── data/spots.json                     # Hand-entered spots for 3 cities
+│   └── vendor/leaflet/                     # Map library
+├── src/                                    # Part 3: AI-generated Java code
+├── Product Backlog Of The App YOLO.pdf     # Part 1
+├── YOLO - PART2 - Mockups.docx             # Part 2: 10 scenario descriptions
+├── figma_link.txt                          # Part 2: Figma wireframes link
+├── YOLO_Part3_Wiki.pdf                     # Part 3: full Wiki document
+├── lovable_link.txt                        # Part 3: Lovable prototype link
 └── README.md
 ```
 
@@ -135,6 +194,7 @@ Mock-ups were created in **Figma** (mobile view, 390×844px).
 
 | Layer | Technology |
 |-------|-----------|
+| Web prototype | HTML, CSS, JavaScript, Leaflet, OpenStreetMap, GitHub Pages |
 | Java (LLM demo) | Java 17, VS Code |
 | No-code prototype | React, TypeScript, Lovable |
 | Wireframes | Figma |
@@ -152,6 +212,7 @@ This project used AI tools as part of the assignment requirements:
 - **Lovable** — No-code prototype generation (Task 2)
 - **ChatGPT / GPT-4o (OpenAI)** — AI code review (Task 3)
 - **Claude** — Assisted with documentation structuring and grammar correction
+- **Claude Code** — Built the web prototype in `docs/` and entered the seed data
 
 All AI usage is documented and critically evaluated in the Part 3 Wiki.
 
