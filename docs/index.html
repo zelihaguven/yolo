@@ -2,104 +2,147 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>YOLO – Your Erasmus Life Online</title>
   <meta name="description" content="Student-friendly spots in Heilbronn, Stuttgart and Frankfurt, picked for Erasmus students.">
+  <meta name="theme-color" content="#f3f5fa">
   <link rel="stylesheet" href="vendor/leaflet/leaflet.css">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <header class="top">
-    <div class="brand">
-      <span class="logo">YOLO</span>
-      <span class="tagline">Discover your city. Student-approved.</span>
-    </div>
-    <div class="cities" id="cities" role="tablist" aria-label="City"></div>
-  </header>
+  <div class="app" id="app" data-tab="explore">
+    <header class="top">
+      <div class="brand">
+        <span class="logo">YOLO</span>
+        <span class="tagline">Discover your city. <span>Student-approved.</span></span>
+      </div>
+      <div class="cities" id="cities" role="tablist" aria-label="City"></div>
+    </header>
 
-  <section class="controls" aria-label="Search and filters">
-    <input id="search" type="search" placeholder="Search spots by name" aria-label="Search spots by name" autocomplete="off">
-    <div class="pills" id="categories" role="group" aria-label="Category"></div>
-    <div class="row">
-      <label class="select">
-        <span>Price</span>
-        <select id="price">
-          <option value="any">Any</option>
-          <option value="0">Free</option>
-          <option value="1">Up to €</option>
-          <option value="2">Up to €€</option>
-        </select>
+    <section class="controls" aria-label="Search and filters">
+      <label class="searchbar">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        <input id="search" type="search" placeholder="Search a spot…" aria-label="Search spots by name" autocomplete="off">
       </label>
-      <label class="check"><input type="checkbox" id="student"> Student-friendly</label>
-      <label class="check"><input type="checkbox" id="savedOnly"> Saved <span id="savedCount" class="count">0</span></label>
-    </div>
-  </section>
+      <div class="filters">
+        <div class="pills" id="categories" role="group" aria-label="Category"></div>
+        <div class="pills" role="group" aria-label="More filters">
+          <label class="pill toggle"><input type="checkbox" id="student"> Student-friendly</label>
+          <label class="pill selectpill">
+            <span class="sr">Price</span>
+            <select id="price">
+              <option value="any">Any price</option>
+              <option value="0">Free only</option>
+              <option value="1">Up to €</option>
+              <option value="2">Up to €€</option>
+            </select>
+          </label>
+        </div>
+      </div>
+    </section>
 
-  <div class="viewtoggle" role="group" aria-label="View">
-    <button type="button" id="showList" aria-pressed="true">List</button>
-    <button type="button" id="showMap" aria-pressed="false">Map</button>
+    <main class="layout">
+      <section class="listpane" aria-label="Spots">
+        <div class="savedhead">
+          <h1>My Saved Spots</h1>
+          <p id="savedLine"></p>
+        </div>
+        <div class="listhead">
+          <p class="resultcount" id="resultCount" aria-live="polite"></p>
+          <button type="button" class="maplink" id="mapLink">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2-6-2Z"/><path d="M9 4v14M15 6v14"/></svg>
+            Map View
+          </button>
+        </div>
+        <ul class="cards" id="cards"></ul>
+        <div class="empty" id="empty" hidden>
+          <p id="emptyText"></p>
+          <button type="button" class="btn ghost" id="reset">Clear filters</button>
+        </div>
+      </section>
+      <section class="mappane" aria-label="Map">
+        <div id="map"></div>
+      </section>
+    </main>
+
+    <footer class="foot">
+      Prototype for the YOLO course project. Seed data is hand-entered, so check opening times and prices before you go.
+      Map data © <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors.
+    </footer>
+
+    <nav class="bottomnav" aria-label="Main">
+      <button type="button" data-tab="explore" aria-current="page">
+        <span class="navicon"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="m15.5 8.5-2 5-5 2 2-5 5-2Z"/></svg></span>
+        <span>Explore</span>
+      </button>
+      <button type="button" data-tab="map">
+        <span class="navicon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2-6-2Z"/><path d="M9 4v14M15 6v14"/></svg></span>
+        <span>Map</span>
+      </button>
+      <button type="button" data-tab="saved">
+        <span class="navicon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 4h12v17l-6-4-6 4V4Z"/></svg></span>
+        <span>Saved <b id="savedCount">0</b></span>
+      </button>
+    </nav>
   </div>
 
-  <main class="layout" data-view="list">
-    <section class="listpane" aria-label="Spots">
-      <p class="resultcount" id="resultCount" aria-live="polite"></p>
-      <ul class="cards" id="cards"></ul>
-      <div class="empty" id="empty" hidden>
-        <p>No spots match these filters.</p>
-        <button type="button" id="reset">Clear filters</button>
-      </div>
-    </section>
-    <section class="mappane" aria-label="Map">
-      <div id="map"></div>
-    </section>
-  </main>
-
   <dialog id="detail" aria-labelledby="dTitle">
-    <div class="dhead">
-      <div>
-        <h2 id="dTitle"></h2>
-        <p class="dmeta" id="dMeta"></p>
-      </div>
-      <button type="button" class="iconbtn" id="dClose" aria-label="Close">✕</button>
+    <div class="hero" id="dHero">
+      <button type="button" class="round" id="dClose" aria-label="Back">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m14 6-6 6 6 6"/></svg>
+      </button>
+      <span class="heroicon" id="dHeroIcon" aria-hidden="true"></span>
     </div>
-    <div class="dbody">
-      <p id="dTip"></p>
-      <p class="tags" id="dTags"></p>
-      <p class="unverified" id="dUnverified" hidden>Price and discount details for this spot have not been checked on site yet.</p>
-      <div class="dactions">
-        <button type="button" id="dSave" class="primary"></button>
-        <a id="dDirections" class="button" target="_blank" rel="noopener">Get directions</a>
+    <div class="sheet">
+      <div class="titlerow">
+        <h2 id="dTitle"></h2>
+        <span class="ratingchip" id="dRating"></span>
       </div>
+      <p class="address" id="dMeta"></p>
+      <p class="tags" id="dTags"></p>
+      <p class="chips" id="dChips"></p>
+      <p class="tip" id="dTip"></p>
+      <p class="unverified" id="dUnverified" hidden>Price and discount details for this spot have not been checked on site yet.</p>
 
-      <h3>Student reviews <span id="dReviewSummary" class="muted"></span></h3>
+      <h3>Student Reviews <span id="dReviewSummary"></span></h3>
       <ul class="reviews" id="dReviews"></ul>
-      <p class="muted" id="dNoReviews">No reviews yet. Be the first.</p>
+      <p class="noreviews" id="dNoReviews">No reviews yet. Be the first.</p>
 
       <form id="reviewForm" novalidate>
         <h3>Write a review</h3>
         <label>Your name
-          <input id="rName" type="text" maxlength="40" required autocomplete="given-name">
+          <input id="rName" type="text" maxlength="40" required autocomplete="given-name" placeholder="Sofia">
         </label>
         <fieldset class="stars">
-          <legend>Rating</legend>
+          <legend>Tap to rate</legend>
           <div id="rStars"></div>
         </fieldset>
         <label>Your review
-          <textarea id="rText" rows="3" maxlength="500" required></textarea>
+          <textarea id="rText" rows="3" maxlength="500" required placeholder="Write your insider tip for this place…"></textarea>
         </label>
         <p class="hint"><span id="rCount">0</span>/500 · Saved in this browser only.</p>
         <p class="error" id="rError" role="alert" hidden></p>
-        <button type="submit" class="primary">Submit review</button>
+        <button type="submit" class="btn ghost">Submit Review</button>
       </form>
+      <div class="done" id="rDone" hidden>
+        <span class="check" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg></span>
+        <h3>Thanks for sharing!</h3>
+        <p>Your review helps other Erasmus students.</p>
+        <button type="button" class="btn ghost" id="rBack">Back to reviews</button>
+      </div>
+    </div>
+    <div class="actionbar">
+      <button type="button" class="bookmark" id="dSave">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 4h12v17l-6-4-6 4V4Z"/></svg>
+      </button>
+      <a id="dDirections" class="btn primary" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2 2 12l10 10 10-10L12 2Z"/><path d="M9 14v-3h5m-2-2 2 2-2 2"/></svg>
+        Get Directions
+      </a>
     </div>
   </dialog>
 
   <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
-
-  <footer class="foot">
-    Prototype for the YOLO course project. Seed data is hand-entered, so check opening times and prices before you go.
-    Map data © <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors.
-  </footer>
 
   <script src="vendor/leaflet/leaflet.js"></script>
   <script src="app.js"></script>

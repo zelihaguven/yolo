@@ -41,19 +41,19 @@ The prototype does not send any data anywhere, so today this number can only be 
 
 ### Wireframes vs. what was built
 
-Compared with the Part 2 scenarios (the Figma link is in `figma_link.txt`).
+Compared with the Part 2 Figma mock-ups (link in `figma_link.txt`). The prototype follows their visual language: blue YOLO logo, white rounded cards on a light grey canvas, filter pills, coloured price chips, bottom navigation with a purple active tab, and a spot detail sheet with a fixed "Get Directions" bar.
 
 | Wireframe scenario | In the prototype | Difference and reason |
 |---|---|---|
 | 1. Registration & email verification | Not built | Needs a backend. Reviews ask only for a name. |
-| 2. City exploration & spot discovery | Built | Cities are three fixed tabs instead of a free-text city search. Filter pills, a price filter and a spot detail view are there. Opening hours are not in the data yet. |
-| 3. Saving a spot | Built | Bookmark and "Saved to your list ✓" toast as designed. The saved list is a filter on the main screen, not a profile page. |
-| 4. Writing a review | Built | Text and 1–5 star rating as designed. No photo upload. The review appears directly in the spot's review list instead of a separate confirmation screen. |
+| 2. City exploration & spot discovery | Built | Cities are three fixed tabs instead of a free-text city search. Result cards, filter pills and the spot detail sheet follow the mock-up. Spots show a category icon instead of a photo, and opening hours are not in the data yet. The Home screen with "Trending this week" is skipped; the app opens on the results list. |
+| 3. Saving a spot | Built | Bookmark button and "Saved to your list ✓" toast as designed. "My Saved Spots" is its own tab in the bottom navigation, since there is no profile page. |
+| 4. Writing a review | Built | Tip text, tap-to-rate stars and the "Thanks for sharing!" confirmation as designed. The form sits inside the spot detail instead of on its own screen, and there is no photo upload. |
 | 6. Community map | Built | Coloured pins per category that follow the filters, pin popup with a "Details" button. The map centres on the chosen city, not on the user's location. |
-| 7. Reading & upvoting reviews | Partly | Reviews can be read. Upvotes are left out because they only make sense once reviews are shared between users. |
+| 7. Reading & upvoting reviews | Partly | Reviews are listed with name, stars and a thumbs-up button, sorted by upvotes. Because reviews are stored per browser, an upvote only counts your own vote for now. |
 | 5, 8, 9, 10. Weekend trips, events, trip reports, profile | Not built | Out of scope for the first working version. |
 
-The biggest change from the wireframes: on a wide screen the list and the map sit side by side, while the wireframes are mobile only. On a phone the prototype follows the wireframes with a List / Map switch.
+The biggest change from the mock-ups: on a wide screen the list and the map sit side by side, while the mock-ups are mobile only. On a phone the prototype uses the bottom navigation (Explore, Map, Saved) like the mock-ups.
 
 ### User feedback
 
