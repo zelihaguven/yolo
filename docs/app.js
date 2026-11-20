@@ -2,15 +2,21 @@
   'use strict';
 
   var CATEGORIES = {
-    cafe: { label: 'Cafés', one: 'Café', color: '#b45309' },
-    food: { label: 'Food', one: 'Food', color: '#c2410c' },
-    bar: { label: 'Bars', one: 'Bar', color: '#7e22ce' },
-    park: { label: 'Parks', one: 'Park', color: '#15803d' },
-    museum: { label: 'Museums', one: 'Museum', color: '#1d4ed8' },
-    sight: { label: 'Sights', one: 'Sight', color: '#be123c' },
-    study: { label: 'Study spots', one: 'Study spot', color: '#0f766e' }
+    cafe: { label: 'Cafes', one: 'Cafe', color: '#d97706', tint: '#fdf0dc', icon: '☕' },
+    food: { label: 'Food', one: 'Food', color: '#ea580c', tint: '#fde8dc', icon: '🍽️' },
+    bar: { label: 'Bars', one: 'Bar', color: '#6c56d6', tint: '#ebe7fb', icon: '🍹' },
+    park: { label: 'Parks', one: 'Park', color: '#16a34a', tint: '#dff5e6', icon: '🌳' },
+    museum: { label: 'Museums', one: 'Museum', color: '#2563eb', tint: '#e0eafc', icon: '🏛️' },
+    sight: { label: 'Sights', one: 'Sight', color: '#e11d48', tint: '#fde3e9', icon: '📸' },
+    study: { label: 'Study', one: 'Study', color: '#0d9488', tint: '#dcf3f1', icon: '📚' }
   };
-  var PRICE = ['Free', '€', '€€', '€€€'];
+  var PRICE = [
+    { text: 'Free entry', cls: 'green' },
+    { text: '€ · Low cost', cls: 'green' },
+    { text: '€€ · Mid range', cls: 'yellow' },
+    { text: '€€€ · Premium', cls: 'yellow' }
+  ];
+  var PRICE_SHORT = ['Free', '€', '€€', '€€€'];
   var REVIEWS_KEY = 'yolo.reviews.v1';
   var SAVED_KEY = 'yolo.saved.v1';
   var CITY_KEY = 'yolo.city.v1';
@@ -42,17 +48,20 @@
   if (!saved || typeof saved !== 'object') saved = {};
 
   var data = { cities: [], spots: [] };
-  var state = { city: null, q: '', category: 'all', price: 'any', student: false, savedOnly: false };
+  var state = { tab: 'explore', city: null, q: '', category: 'all', price: 'any', student: false };
   var openSpot = null;
   var map = null;
   var markerLayer = null;
-  var markers = {};
 
   // ---------- helpers ----------
   function norm(s) {
     return String(s).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/ß/g, 'ss');
   }
   function isStudentFriendly(s) { return s.price === 0 || s.studentDiscount; }
+  function cityName(id) {
+    var c = data.cities.filter(function (x) { return x.id === id; })[0];
+    return c ? c.name : '';
+  }
   function spotReviews(id) { return Array.isArray(reviews[id]) ? reviews[id] : []; }
   function average(list) {
     if (!list.length) return null;
@@ -62,17 +71,24 @@
     var r = Math.round(n);
     return '★★★★★'.slice(0, r) + '☆☆☆☆☆'.slice(0, 5 - r);
   }
+  function savedCount() {
+    return data.spots.filter(function (s) { return saved[s.id]; }).length;
+  }
   function filtered() {
     var q = norm(state.q.trim());
-    return data.spots.filter(function (s) {
-      if (s.city !== state.city) return false;
+    var list = data.spots.filter(function (s) {
       if (q && norm(s.name).indexOf(q) === -1) return false;
+      if (state.tab === 'saved') return !!saved[s.id];
+      if (s.city !== state.city) return false;
       if (state.category !== 'all' && s.category !== state.category) return false;
       if (state.price !== 'any' && s.price > Number(state.price)) return false;
       if (state.student && !isStudentFriendly(s)) return false;
-      if (state.savedOnly && !saved[s.id]) return false;
       return true;
-    }).sort(function (a, b) { return a.name.localeCompare(b.name, 'de'); });
+    });
+    if (state.tab === 'saved') {
+      return list.sort(function (a, b) { return saved[b.id] < saved[a.id] ? -1 : 1; });
+    }
+    return list.sort(function (a, b) { return a.name.localeCompare(b.name, 'de'); });
   }
   var toastTimer = null;
   function toast(msg) {
@@ -96,6 +112,7 @@
       b.addEventListener('click', function () {
         state.city = c.id;
         store(CITY_KEY, c.id);
+        if (state.tab === 'saved') state.tab = 'explore';
         renderCities();
         render(true);
       });
@@ -119,21 +136,24 @@
     });
   }
 
-  function badges(s) {
-    var wrap = el('span', 'badges');
-    wrap.appendChild(el('span', 'badge price', PRICE[s.price]));
-    if (s.studentDiscount) wrap.appendChild(el('span', 'badge student', 'Student discount'));
+  function chips(s) {
+    var wrap = el('span', 'chiprow');
+    var p = PRICE[s.price];
+    wrap.appendChild(el('span', 'chip ' + p.cls, p.text));
+    if (s.studentDiscount) wrap.appendChild(el('span', 'chip green', 'Student discount'));
     return wrap;
   }
-
-  function saveButton(s, withLabel) {
-    var on = !!saved[s.id];
-    var b = el('button', 'savebtn' + (on ? ' on' : ''));
-    b.type = 'button';
-    b.setAttribute('aria-pressed', String(on));
-    b.setAttribute('aria-label', (on ? 'Remove from saved: ' : 'Save: ') + s.name);
-    b.textContent = withLabel ? (on ? '★ Saved' : '☆ Save') : (on ? '★' : '☆');
-    return b;
+  function tags(s, withCity) {
+    var wrap = el('span', 'tagrow');
+    wrap.appendChild(el('span', 'tag', CATEGORIES[s.category].one));
+    wrap.appendChild(el('span', 'tag', withCity ? cityName(s.city) : s.area));
+    return wrap;
+  }
+  function thumb(s, cls) {
+    var t = el('span', cls, CATEGORIES[s.category].icon);
+    t.style.background = CATEGORIES[s.category].tint;
+    t.setAttribute('aria-hidden', 'true');
+    return t;
   }
 
   function toggleSave(s) {
@@ -151,24 +171,32 @@
       var li = el('li', 'card');
       var main = el('button', 'cardmain');
       main.type = 'button';
-      var dot = el('span', 'dot');
-      dot.style.background = CATEGORIES[s.category].color;
-      var title = el('span', 'cardtitle');
-      title.appendChild(dot);
-      title.appendChild(document.createTextNode(s.name));
-      main.appendChild(title);
-      main.appendChild(el('span', 'cardmeta', CATEGORIES[s.category].one + ' · ' + s.area));
-      main.appendChild(el('span', 'cardtip', s.tip));
+      main.appendChild(thumb(s, 'thumb'));
+      var body = el('span', 'cardbody');
+      body.appendChild(el('span', 'cardtitle', s.name));
+      body.appendChild(tags(s, state.tab === 'saved'));
       var foot = el('span', 'cardfoot');
-      foot.appendChild(badges(s));
+      foot.appendChild(chips(s));
       var rs = spotReviews(s.id);
       var avg = average(rs);
-      foot.appendChild(el('span', 'rating', avg == null ? 'No reviews yet' : '★ ' + avg.toFixed(1) + ' (' + rs.length + ')'));
-      main.appendChild(foot);
+      if (avg != null) {
+        var r = el('span', 'rating');
+        r.appendChild(el('span', 'star', '★'));
+        r.appendChild(document.createTextNode(' ' + avg.toFixed(1)));
+        r.setAttribute('aria-label', avg.toFixed(1) + ' out of 5 from ' + rs.length + ' reviews');
+        foot.appendChild(r);
+      }
+      body.appendChild(foot);
+      main.appendChild(body);
       main.addEventListener('click', function () { openDetail(s); });
       li.appendChild(main);
 
-      var sb = saveButton(s, false);
+      var on = !!saved[s.id];
+      var sb = el('button', 'savebtn' + (on ? ' on' : ''));
+      sb.type = 'button';
+      sb.setAttribute('aria-pressed', String(on));
+      sb.setAttribute('aria-label', (on ? 'Remove from saved: ' : 'Save: ') + s.name);
+      sb.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 4h12v17l-6-4-6 4V4Z"/></svg>';
       sb.addEventListener('click', function () { toggleSave(s); });
       li.appendChild(sb);
       ul.appendChild(li);
@@ -178,14 +206,13 @@
   function renderMap(list, recenter) {
     if (!map) return;
     markerLayer.clearLayers();
-    markers = {};
     list.forEach(function (s) {
       var m = L.circleMarker([s.lat, s.lng], {
-        radius: 9, weight: 2, color: '#ffffff', fillColor: CATEGORIES[s.category].color, fillOpacity: 1
+        radius: 9, weight: 3, color: '#ffffff', fillColor: CATEGORIES[s.category].color, fillOpacity: 1
       });
       var pop = el('div', 'pop');
       pop.appendChild(el('strong', null, s.name));
-      pop.appendChild(el('span', 'popmeta', CATEGORIES[s.category].one + ' · ' + PRICE[s.price]));
+      pop.appendChild(el('span', 'popmeta', CATEGORIES[s.category].one + ' · ' + PRICE_SHORT[s.price]));
       var btn = el('button', 'popbtn', 'Details');
       btn.type = 'button';
       btn.addEventListener('click', function () { openDetail(s); });
@@ -193,12 +220,13 @@
       m.bindPopup(pop);
       m.bindTooltip(s.name);
       m.addTo(markerLayer);
-      markers[s.id] = m;
     });
     if (recenter) {
       var c = data.cities.filter(function (x) { return x.id === state.city; })[0];
       if (list.length > 1) {
         map.fitBounds(L.latLngBounds(list.map(function (s) { return [s.lat, s.lng]; })).pad(0.15));
+      } else if (list.length === 1) {
+        map.setView([list[0].lat, list[0].lng], 15);
       } else if (c) {
         map.setView([c.lat, c.lng], c.zoom);
       }
@@ -206,51 +234,84 @@
   }
 
   function render(recenter) {
+    $('app').dataset.tab = state.tab;
+    Array.prototype.forEach.call(document.querySelectorAll('.bottomnav button'), function (b) {
+      if (b.dataset.tab === state.tab) b.setAttribute('aria-current', 'page');
+      else b.removeAttribute('aria-current');
+    });
+    Array.prototype.forEach.call(document.querySelectorAll('.city'), function (b) {
+      b.setAttribute('aria-selected', String(state.tab !== 'saved' && b.textContent === cityName(state.city)));
+    });
     renderCategories();
     var list = filtered();
     renderCards(list);
     renderMap(list, recenter);
-    var total = data.spots.filter(function (s) { return s.city === state.city; }).length;
-    $('resultCount').textContent = list.length + ' of ' + total + ' spots';
+    var n = savedCount();
+    $('savedCount').textContent = n;
+    $('savedLine').textContent = 'You have ' + n + ' saved location' + (n === 1 ? '' : 's');
+    $('resultCount').textContent = 'Found ' + list.length + ' result' + (list.length === 1 ? '' : 's');
     $('empty').hidden = list.length > 0;
-    $('savedCount').textContent = Object.keys(saved).length;
+    var nothingSaved = state.tab === 'saved' && n === 0;
+    $('emptyText').textContent = nothingSaved
+      ? 'Nothing saved yet. Tap the bookmark on a spot to keep it here.'
+      : 'No spots match your search.';
+    $('reset').textContent = nothingSaved ? 'Explore spots' : 'Clear filters';
   }
 
   // ---------- detail + reviews ----------
   function renderDetail() {
     var s = openSpot;
     if (!s) return;
+    var cat = CATEGORIES[s.category];
+    $('dHero').style.background = 'linear-gradient(160deg, ' + cat.tint + ', ' + cat.color + ')';
+    $('dHeroIcon').textContent = cat.icon;
     $('dTitle').textContent = s.name;
-    var city = data.cities.filter(function (c) { return c.id === s.city; })[0];
-    $('dMeta').textContent = CATEGORIES[s.category].one + ' · ' + s.area + ', ' + (city ? city.name : '');
+    $('dMeta').textContent = '📍 ' + s.area + ', ' + cityName(s.city);
     $('dTip').textContent = s.tip;
-    var tags = $('dTags');
-    tags.textContent = '';
-    tags.appendChild(badges(s));
+    var t = $('dTags'); t.textContent = ''; t.appendChild(tags(s, false));
+    var c = $('dChips'); c.textContent = ''; c.appendChild(chips(s));
     $('dUnverified').hidden = s.verified !== false;
 
     var save = $('dSave');
     var on = !!saved[s.id];
-    save.textContent = on ? '★ Saved' : '☆ Save';
+    save.classList.toggle('on', on);
     save.setAttribute('aria-pressed', String(on));
+    save.setAttribute('aria-label', on ? 'Remove from saved' : 'Save');
     $('dDirections').href = 'https://www.openstreetmap.org/directions?to=' + s.lat + '%2C' + s.lng;
 
-    var rs = spotReviews(s.id).slice().sort(function (a, b) { return b.date < a.date ? -1 : 1; });
+    var rs = spotReviews(s.id).slice().sort(function (a, b) {
+      return ((b.up || 0) - (a.up || 0)) || (b.date < a.date ? -1 : 1);
+    });
     var avg = average(rs);
-    $('dReviewSummary').textContent = avg == null ? '' : '★ ' + avg.toFixed(1) + ' · ' + rs.length;
+    $('dRating').textContent = avg == null ? 'New' : '★ ' + avg.toFixed(1);
+    $('dReviewSummary').textContent = rs.length ? '(' + rs.length + ')' : '';
     $('dNoReviews').hidden = rs.length > 0;
     var ul = $('dReviews');
     ul.textContent = '';
     rs.forEach(function (r) {
       var li = el('li', 'review');
       var head = el('div', 'reviewhead');
-      head.appendChild(el('strong', null, r.name));
+      head.appendChild(el('span', 'avatar', r.name.charAt(0).toUpperCase()));
+      var who = el('div', 'who');
+      who.appendChild(el('strong', null, r.name));
+      who.appendChild(el('span', null, new Date(r.date).toLocaleDateString()));
+      head.appendChild(who);
       var st = el('span', 'stars-ro', starText(r.rating));
       st.setAttribute('aria-label', r.rating + ' out of 5');
       head.appendChild(st);
-      head.appendChild(el('span', 'muted', new Date(r.date).toLocaleDateString()));
       li.appendChild(head);
-      li.appendChild(el('p', null, r.text));
+      li.appendChild(el('p', null, '“' + r.text + '”'));
+      var foot = el('div', 'reviewfoot');
+      var up = el('button', 'upvote' + (r.up ? ' on' : ''), '👍 ' + (r.up || 0));
+      up.type = 'button';
+      up.setAttribute('aria-pressed', String(!!r.up));
+      up.setAttribute('aria-label', 'Helpful, ' + (r.up || 0) + (r.up === 1 ? ' vote' : ' votes'));
+      up.addEventListener('click', function () {
+        spotReviews(s.id).forEach(function (x) { if (x.id === r.id) x.up = x.up ? 0 : 1; });
+        store(REVIEWS_KEY, reviews);
+        renderDetail();
+      });
+      foot.appendChild(up);
       var del = el('button', 'linkbtn', 'Delete');
       del.type = 'button';
       del.addEventListener('click', function () {
@@ -260,7 +321,8 @@
         renderDetail();
         render();
       });
-      li.appendChild(del);
+      foot.appendChild(del);
+      li.appendChild(foot);
       ul.appendChild(li);
     });
   }
@@ -270,6 +332,8 @@
     $('reviewForm').reset();
     $('rCount').textContent = '0';
     $('rError').hidden = true;
+    paintStars();
+    showForm(true);
     renderDetail();
     var d = $('detail');
     if (!d.open) d.showModal();
@@ -303,9 +367,23 @@
     }
     $('reviewForm').reset();
     $('rCount').textContent = '0';
+    paintStars();
+    showForm(false);
     renderDetail();
     render();
-    toast('Thanks for sharing!');
+    $('rDone').scrollIntoView({ block: 'center' });
+  }
+
+  function paintStars() {
+    var picked = document.querySelector('input[name="rating"]:checked');
+    var n = picked ? Number(picked.value) : 0;
+    Array.prototype.forEach.call(document.querySelectorAll('#rStars label'), function (l, i) {
+      l.classList.toggle('on', i < n);
+    });
+  }
+  function showForm(show) {
+    $('reviewForm').hidden = !show;
+    $('rDone').hidden = show;
   }
 
   function buildStars() {
@@ -313,22 +391,24 @@
     for (var i = 1; i <= 5; i++) {
       var input = el('input');
       input.type = 'radio'; input.name = 'rating'; input.value = String(i); input.id = 'star' + i;
-      var label = el('label', null, String(i) + ' ★');
+      var label = el('label', null, '★');
       label.htmlFor = 'star' + i;
+      label.setAttribute('aria-label', i + (i === 1 ? ' star' : ' stars'));
+      input.addEventListener('change', paintStars);
       box.appendChild(input);
       box.appendChild(label);
     }
   }
 
   // ---------- wiring ----------
-  function setView(v) {
-    document.querySelector('.layout').dataset.view = v;
-    $('showList').setAttribute('aria-pressed', String(v === 'list'));
-    $('showMap').setAttribute('aria-pressed', String(v === 'map'));
-    if (v === 'map' && map) {
+  function setTab(tab) {
+    state.tab = tab;
+    render(true);
+    if (map) {
       map.invalidateSize();
       renderMap(filtered(), true);
     }
+    window.scrollTo(0, 0);
   }
 
   function initMap() {
@@ -346,20 +426,25 @@
     $('search').addEventListener('input', function (e) { state.q = e.target.value; render(); });
     $('price').addEventListener('change', function (e) { state.price = e.target.value; render(); });
     $('student').addEventListener('change', function (e) { state.student = e.target.checked; render(); });
-    $('savedOnly').addEventListener('change', function (e) { state.savedOnly = e.target.checked; render(); });
     $('reset').addEventListener('click', function () {
-      state.q = ''; state.category = 'all'; state.price = 'any'; state.student = false; state.savedOnly = false;
-      $('search').value = ''; $('price').value = 'any'; $('student').checked = false; $('savedOnly').checked = false;
-      render();
+      state.q = ''; state.category = 'all'; state.price = 'any'; state.student = false;
+      $('search').value = ''; $('price').value = 'any'; $('student').checked = false;
+      if (state.tab === 'saved') setTab('explore'); else render();
     });
-    $('showList').addEventListener('click', function () { setView('list'); });
-    $('showMap').addEventListener('click', function () { setView('map'); });
+    $('mapLink').addEventListener('click', function () { setTab('map'); });
+    Array.prototype.forEach.call(document.querySelectorAll('.bottomnav button'), function (b) {
+      b.addEventListener('click', function () { setTab(b.dataset.tab); });
+    });
     $('dClose').addEventListener('click', function () { $('detail').close(); });
     $('detail').addEventListener('click', function (e) { if (e.target === $('detail')) $('detail').close(); });
     $('detail').addEventListener('close', function () { openSpot = null; });
     $('dSave').addEventListener('click', function () { if (openSpot) toggleSave(openSpot); });
     $('rText').addEventListener('input', function (e) { $('rCount').textContent = e.target.value.length; });
     $('reviewForm').addEventListener('submit', submitReview);
+    $('rBack').addEventListener('click', function () {
+      showForm(true);
+      $('dReviews').scrollIntoView({ block: 'start' });
+    });
 
     fetch('data/spots.json')
       .then(function (r) {
