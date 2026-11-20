@@ -60,9 +60,7 @@ The biggest change from the mock-ups: on a wide screen the list and the map sit 
 
 ### User feedback
 
-**Real testers: not run yet.** The table at the end of this section is empty on purpose and is only filled with answers from real people.
-
-Until then, the prototype was walked through from the point of view of three personas taken from the user groups in the Part 1 backlog. These are **hypotheses about what real users will say, not user quotes**. Each one is tied to something that can be checked in the live prototype.
+**No real testers yet.** Instead, the prototype was walked through from the point of view of three personas taken from the user groups in the Part 1 backlog. These are **hypotheses about what real users will say, not user quotes**. Each one is tied to something that can be checked in the live prototype.
 
 | Persona (invented) | Task | Expected to work | Expected friction |
 |---|---|---|---|
@@ -76,15 +74,7 @@ Until then, the prototype was walked through from the point of view of three per
 2. Photos and opening hours matter more for choosing a spot than ratings do.
 3. A review nobody else can see is not worth writing. If true, a shared database comes before any other feature.
 
-**Test plan.** 3 to 5 Erasmus students each get the link and one task ("find a free place to spend Saturday afternoon and save it"), then answer three questions: what did you save, what was confusing, what was missing.
-
-| Real tester | Home country → host city | Spots saved | What worked | What was confusing or missing |
-|---|---|---|---|---|
-| 1 | | | | |
-| 2 | | | | |
-| 3 | | | | |
-
-**What we change because of it:** *(to be filled in after the test round)*
+**Next step.** Give 3 to 5 Erasmus students the link and one task ("find a free place to spend Saturday afternoon and save it"), then ask what they saved, what was confusing and what was missing.
 
 ---
 
