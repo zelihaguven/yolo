@@ -10,7 +10,7 @@ All spots live in `spots.json`. The site reads this file on every page load, so 
 | `city` | yes | `"heilbronn"` | Must match an `id` in the `cities` list. |
 | `name` | yes | `"experimenta Science Center"` | |
 | `category` | yes | `"museum"` | One of `cafe`, `food`, `bar`, `park`, `museum`, `sight`, `study`. |
-| `price` | yes | `2` | `0` free, `1` €, `2` €€, `3` €€€. A number, no quotes. |
+| `price` | yes | `2` | `0` free, `1` € (under 10 €), `2` €€ (10 to 20 €), `3` €€€ (over 20 €). A number, no quotes. |
 | `lat`, `lng` | yes | `49.1474`, `9.2152` | Right-click the place on openstreetmap.org → "Show address" to read them. |
 | `studentDiscount` | no | `true` | |
 | `area` | no | `"Kraneninsel"` | Neighbourhood, shown as a tag. |

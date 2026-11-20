@@ -30,7 +30,7 @@ Then open `http://localhost:8000`.
 
 **Adding data.** Spots, photos and opening hours are edited by hand in one file. [`docs/data/README.md`](docs/data/README.md) explains every field.
 
-**Known limits.** Reviews and saved spots stay in your own browser, so other people cannot see them yet. The next step is a shared database such as Supabase. Spots marked `"verified": false` in the data file still need their price, student discount and coordinates checked on site.
+**Known limits.** Reviews and saved spots stay in your own browser, so other people cannot see them yet. The next step is a shared database such as Supabase. 10 of the 48 spots have had their price and student discount checked against official sources online; the rest are marked `"verified": false` and show a note. Coordinates are approximate for all spots.
 
 ### The problem
 
