@@ -60,9 +60,25 @@ The biggest change from the mock-ups: on a wide screen the list and the map sit 
 
 ### User feedback
 
-*Not collected yet.* Plan: 3 to 5 Erasmus students each get the link and one task ("find a free place to spend Saturday afternoon and save it"), then answer three questions.
+**Real testers: not run yet.** The table at the end of this section is empty on purpose and is only filled with answers from real people.
 
-| Tester | Home country → host city | Spots saved | What worked | What was confusing or missing |
+Until then, the prototype was walked through from the point of view of three personas taken from the user groups in the Part 1 backlog. These are **hypotheses about what real users will say, not user quotes**. Each one is tied to something that can be checked in the live prototype.
+
+| Persona (invented) | Task | Expected to work | Expected friction |
+|---|---|---|---|
+| **New arrival.** Second week in Heilbronn, small budget, does not know the city. | Find something free for Saturday afternoon and save it. | "Student-friendly" plus "Free only" narrows 14 spots to a short list in two taps. Saving shows a clear confirmation. | Search matches names only, so typing "coffee" or "park" finds nothing and the category pills have to be discovered instead. Most spots have no photo or opening hours yet, so it is hard to choose between two parks. |
+| **Returning Erasmus student.** Spent last year in Stuttgart and wants to help the next group. | Leave a tip for a place they know well. | Rating and review take under a minute and need no account. | The review is stored in their own browser, so nobody else will ever see it. Their favourite place is probably not among the 16 Stuttgart spots and there is no way to add one. |
+| **Long-term international student.** Third semester in Frankfurt, plans weekends with friends. | Send a spot to a group chat. | The share button gives a link that opens the spot directly. | The saved list does not follow them from laptop to phone. "Get Directions" opens OpenStreetMap, where many would expect their usual maps app. The note "not checked yet" on most spots lowers trust in the prices. |
+
+**Hypotheses to test with real users, most important first:**
+
+1. People search by what they want ("coffee", "free") more than by name. If true, search should also match category and tip text.
+2. Photos and opening hours matter more for choosing a spot than ratings do.
+3. A review nobody else can see is not worth writing. If true, a shared database comes before any other feature.
+
+**Test plan.** 3 to 5 Erasmus students each get the link and one task ("find a free place to spend Saturday afternoon and save it"), then answer three questions: what did you save, what was confusing, what was missing.
+
+| Real tester | Home country → host city | Spots saved | What worked | What was confusing or missing |
 |---|---|---|---|---|
 | 1 | | | | |
 | 2 | | | | |
