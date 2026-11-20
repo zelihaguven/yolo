@@ -18,6 +18,7 @@ A small web app that really works, built with plain HTML, CSS and JavaScript (no
 | Save spots to a personal list | Stored in the browser (`localStorage`) |
 | Leave a rating and a review that is still there after a reload | Stored in the browser (`localStorage`) |
 | See the filtered spots on a map and open them from a pin | Leaflet + OpenStreetMap |
+| Share a spot with a link that opens it directly | Each spot has its own address, for example `…/yolo/#/spot/ff-palmengarten` |
 
 Run it locally:
 
@@ -26,6 +27,8 @@ cd docs && python3 -m http.server 8000
 ```
 
 Then open `http://localhost:8000`.
+
+**Adding data.** Spots, photos and opening hours are edited by hand in one file. [`docs/data/README.md`](docs/data/README.md) explains every field.
 
 **Known limits.** Reviews and saved spots stay in your own browser, so other people cannot see them yet. The next step is a shared database such as Supabase. Spots marked `"verified": false` in the data file still need their price, student discount and coordinates checked on site.
 
@@ -46,7 +49,7 @@ Compared with the Part 2 Figma mock-ups (link in `figma_link.txt`). The prototyp
 | Wireframe scenario | In the prototype | Difference and reason |
 |---|---|---|
 | 1. Registration & email verification | Not built | Needs a backend. Reviews ask only for a name. |
-| 2. City exploration & spot discovery | Built | Cities are three fixed tabs instead of a free-text city search. Result cards, filter pills and the spot detail sheet follow the mock-up. Spots show a category icon instead of a photo, and opening hours are not in the data yet. The Home screen with "Trending this week" is skipped; the app opens on the results list. |
+| 2. City exploration & spot discovery | Built | Cities are three fixed tabs instead of a free-text city search. Result cards, filter pills and the spot detail sheet follow the mock-up. Spots show a category icon until a photo is added, and the Opening Hours card appears once hours are entered for a spot. The Home screen with "Trending this week" is skipped; the app opens on the results list. |
 | 3. Saving a spot | Built | Bookmark button and "Saved to your list ✓" toast as designed. "My Saved Spots" is its own tab in the bottom navigation, since there is no profile page. |
 | 4. Writing a review | Built | Tip text, tap-to-rate stars and the "Thanks for sharing!" confirmation as designed. The form sits inside the spot detail instead of on its own screen, and there is no photo upload. |
 | 6. Community map | Built | Coloured pins per category that follow the filters, pin popup with a "Details" button. The map centres on the chosen city, not on the user's location. |
@@ -102,6 +105,8 @@ yolo
 ├── docs/                                   # Working web prototype (served by GitHub Pages)
 │   ├── index.html, style.css, app.js
 │   ├── data/spots.json                     # Hand-entered spots for 3 cities
+│   ├── data/README.md                      # How to add spots, photos and hours
+│   ├── photos/                             # Spot photos
 │   └── vendor/leaflet/                     # Map library
 ├── src/                                    # Part 3: AI-generated Java code
 ├── Product Backlog Of The App YOLO.pdf     # Part 1

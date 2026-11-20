@@ -7,7 +7,7 @@
   <meta name="description" content="Student-friendly spots in Heilbronn, Stuttgart and Frankfurt, picked for Erasmus students.">
   <meta name="theme-color" content="#f3f5fa">
   <link rel="stylesheet" href="vendor/leaflet/leaflet.css">
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css?v=3">
 </head>
 <body>
   <div class="app" id="app" data-tab="explore">
@@ -92,6 +92,11 @@
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m14 6-6 6 6 6"/></svg>
       </button>
       <span class="heroicon" id="dHeroIcon" aria-hidden="true"></span>
+      <img id="dPhoto" alt="" hidden>
+      <button type="button" class="round right" id="dShare" aria-label="Share this spot">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="6" cy="12" r="2.5"/><circle cx="17" cy="6" r="2.5"/><circle cx="17" cy="18" r="2.5"/><path d="m8.2 10.8 6.6-3.6M8.2 13.2l6.6 3.6"/></svg>
+      </button>
+      <span class="credit" id="dCredit" hidden></span>
     </div>
     <div class="sheet">
       <div class="titlerow">
@@ -103,6 +108,11 @@
       <p class="chips" id="dChips"></p>
       <p class="tip" id="dTip"></p>
       <p class="unverified" id="dUnverified" hidden>Price and discount details for this spot have not been checked on site yet.</p>
+
+      <div id="dHoursBlock" hidden>
+        <h3>Opening Hours</h3>
+        <dl class="hours" id="dHours"></dl>
+      </div>
 
       <h3>Student Reviews <span id="dReviewSummary"></span></h3>
       <ul class="reviews" id="dReviews"></ul>
@@ -145,6 +155,6 @@
   <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
 
   <script src="vendor/leaflet/leaflet.js"></script>
-  <script src="app.js"></script>
+  <script src="app.js?v=3"></script>
 </body>
 </html>
